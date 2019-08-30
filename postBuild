@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -ex
+
+#python -m pip install -r requirements-git.txt --no-deps --ignore-installed
+python -m pip install ipywidgets
+
+for ext in $(cat labextensions.txt)
+do
+    jupyter labextension install --no-build $ext
+done
+jupyter lab build --dev
+jupyter labextension list | sort
+
+if [ "${NB_UID}not-on-binder" = "not-on-binder" ]; then
+    echo "...probably not on binder, leaving env node_modules"
+else
+    echo "...cleaning out jupyterlab staging"
+    rm -rf ${CONDA_DIR}/share/jupyter/lab/staging
+fi
