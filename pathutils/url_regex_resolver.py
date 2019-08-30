@@ -8,7 +8,7 @@ import re
 
 
 def resolve_urls(traffic: pd.DataFrame, toReplace: dict, fromCol: str, toCol: str):
-    traffic[toCol] = traffic.apply(create_resolved_url, axis=1, args=(toReplace, fromCol))
+    traffic.loc[:,toCol] = traffic.apply(create_resolved_url, axis=1, args=(toReplace, fromCol))
 
 
 def create_resolved_url(row: pd.Series, toReplace: dict, fromCol: str):
