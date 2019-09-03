@@ -15,7 +15,8 @@ import matplotlib
 try:
     matplotlib.use("TkAgg")
 except:
-    print("Looks like your system doesn't support TkAgg backend. Plots may not display correctly")
+    print("Looks like your system doesn't support TkAgg backend. If you're running the script from the command line, \
+          there is a small chance plots won't display correctly.")
 
 import matplotlib.pyplot as plt
 import numpy as np
