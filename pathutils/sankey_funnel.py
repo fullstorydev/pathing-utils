@@ -139,6 +139,7 @@ def plot_funnel(title: str, traffic: pd.DataFrame, funnel: list, useResolvedUrls
     title = title + "   (" + title2 + ")"
 
     fig = gobj.Figure(data=[gobj.Sankey(
+        arrangement="freeform",
         node=dict(
             pad=15,
             thickness=20,
