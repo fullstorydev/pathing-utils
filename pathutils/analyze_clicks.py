@@ -62,5 +62,5 @@ def remove_non_navigation(df: pd.DataFrame) -> pd.DataFrame:
     :param df: original dataframe
     :return: dataframe with non-navigation events removed
     """
-    df_nav = df.loc[df["EventType"] == "navigate"]
+    df_nav = df.loc[df["EventType"] == "navigate"].copy()
     return df_nav

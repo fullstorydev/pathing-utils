@@ -12,7 +12,11 @@ Date: May 30, 2019
 
 import matplotlib
 
-#matplotlib.use("TkAgg")
+try:
+    matplotlib.use("TkAgg")
+except:
+    print("Looks like your system doesn't support TkAgg backend. Plots may not display correctly")
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -476,9 +480,9 @@ def get_hauser_as_df(
                     df = df.append(dftemp, sort=False)
                 print("Read file: " + f)
         if navigate_only:
-            df = df.loc[df["EventType"] == "navigate"]
+            df = df.loc[df["EventType"] == "navigate"].copy()
         if no_robots:
-            df = df.loc[df["PageDevice"] != "Robot"]
+            df = df.loc[df["PageDevice"] != "Robot"].copy()
         return df
     else:
         print("Warning: " + folder + " is not a directory")
