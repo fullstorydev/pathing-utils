@@ -1,6 +1,6 @@
 # pathutils
 
-`pathutils` is a collection of utilities to gain user path insights from exported FullStory data..
+`pathutils` is a collection of utilities to gain user path insights from exported FullStory data.
 
 ## Local install
 
