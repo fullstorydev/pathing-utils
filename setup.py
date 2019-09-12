@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='pathutils',
-    version="0.1.21",
+    version="0.1.22",
     packages=["pathutils"],
     description="Collection of pathing analytics utilities for FullStory Hauser export data",
     long_description=open("README.md").read(),
