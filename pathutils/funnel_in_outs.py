@@ -45,6 +45,7 @@ def get_in_outs(traffic: DataFrame, funnel: list, useResolvedUrls: bool, limit_r
         url_regex_resolver.resolve_urls(traffic, manage_resolutions.get_regex_dict(), analyze_traffic.PAGEURL, analyze_traffic.RESOLVEDURL)
     si = analyze_traffic.build_session_index(traffic, columnToUse)
     ingressCounts, egressCounts = analyze_traffic.get_funnel_in_outs(traffic, si, funnel, columnToUse, analyze_traffic.REFERAL)
+    print("done generating inflows and outflows") # this for a  better jupyter notebook experience
     return ingressCounts, egressCounts
 
 if __name__ == "__main__":
