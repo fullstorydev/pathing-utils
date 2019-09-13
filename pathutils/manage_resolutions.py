@@ -39,6 +39,13 @@ def show_rules():
     else:
         print("Rules file doesn't exist")
 
+def get_rules():
+    if os.path.exists(PATHRULES):
+        rules = pickle.load(open(PATHRULES, "rb"))
+        return rules
+    else:
+        return None
+
 def delete_rule(regex: str):
     """Delete a URL resolution rule
 
