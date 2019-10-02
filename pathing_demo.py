@@ -43,6 +43,20 @@ df = analyze_clicks.remove_non_navigation(dffull)
 useResolvedUrls = False
 
 
+# ## Inspect your dataframe(s)
+
+# In[8]:
+
+
+dffull.head(5)
+
+
+# In[9]:
+
+
+df.head(5)
+
+
 # ## Plot a diagram of top most visited URLs
 
 # In[4]:
@@ -79,10 +93,10 @@ analyze_traffic.plot_counts_by_freq(funnel_counts, 0, "Funnel Counts", True)
 
 # ## Plot sankey diagram for the specified funnel
 
-# In[7]:
+# In[8]:
 
 
-sankey_funnel.plot_funnel("Blue Watch Funnel", df, test_funnel, useResolvedUrls, cutoff=5)
+sankey_funnel.plot_funnel("Blue Watch Funnel", df, test_funnel, useResolvedUrls, cutoff=4)
 
 
 # ## Generate session links for the specified funnel
@@ -173,7 +187,7 @@ analyze_traffic.plot_counts_by_freq(url_counts, TOPCOUNTS, "URL Counts", False)
 
 # ## Display current list of URL resolution rules
 
-# In[4]:
+# In[17]:
 
 
 manage_resolutions.show_rules()
@@ -181,7 +195,7 @@ manage_resolutions.show_rules()
 
 # ## Add URL resolution rule
 
-# In[21]:
+# In[18]:
 
 
 manage_resolutions.add_rule("/products/(black|blue|red|gold|rainbow)-watch","/products/<any-watch>")
@@ -189,7 +203,7 @@ manage_resolutions.add_rule("/products/(black|blue|red|gold|rainbow)-watch","/pr
 
 # ## Display URL resolution rules again
 
-# In[22]:
+# In[19]:
 
 
 manage_resolutions.show_rules()
@@ -197,7 +211,7 @@ manage_resolutions.show_rules()
 
 # ## Plot most visited resolved URLs
 
-# In[4]:
+# In[20]:
 
 
 useResolvedUrls = True
