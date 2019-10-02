@@ -1,6 +1,6 @@
 """analyze_traffic.py
 
-A collection of useful functions for analyzing traffic data in the context of user pathing.
+A collection of useful functions for analyzing events data in the context of user pathing.
 
 Most functions would work with a pandas dataframe that will be indexed by sid (User ID + Session ID)
 
@@ -46,20 +46,20 @@ RFPATH = "rf_path"
 RFRESOLVEDURL = "RefResolvedUrl"
 
 
-def add_loop_count(traffic: pd.DataFrame, colName: str):
+def add_loop_count(events: pd.DataFrame, colName: str):
     """
     add_loop_count modifies a Dataframe in-place to add a loop count column. Currently the loop count
     alogrithm is extremely naive (it counts the repeating URLs), but we can improve later.
 
-    :param traffic: pd.Dataframe with traffic data. It's a MultiIndex with sid as the key.
+    :param events: pd.Dataframe with events data. It's a MultiIndex with sid as the key.
     :param colName: The name of the column containing the URLs. We made this a parameter so that we can define
     'loops' as we see fit (either original or cleaned up URLs can be used).
     :return:
     """
-    unique_session_ids = utils.get_sessions(traffic)
+    unique_session_ids = utils.get_sessions(events)
     for idx, sid in enumerate(unique_session_ids):
-        sess_df = traffic.loc[sid]
-        traffic.loc[sid, NUMBEROFLOOPS] = number_of_loops(sess_df[colName].tolist())
+        sess_df = events.loc[sid]
+        events.loc[sid, NUMBEROFLOOPS] = number_of_loops(sess_df[colName].tolist())
 
 
 def number_of_loops(sessList: list) -> int:
@@ -73,21 +73,21 @@ def number_of_loops(sessList: list) -> int:
     return c.most_common(1)[0][1] - 1
 
 
-def add_ref_resolved_url(traffic: pd.DataFrame):
+def add_ref_resolved_url(events: pd.DataFrame):
     """
     add_ref_resolved_url adds a resolved reference URL to DataFrame in RFRESOLVEDURL column.
 
-    :param traffic: traffic DataFrame
+    :param events: events DataFrame
     :return:
     """
-    traffic[RFRESOLVEDURL] = traffic.apply(construct_resolved_ref_url, axis=1)
+    events[RFRESOLVEDURL] = events.apply(construct_resolved_ref_url, axis=1)
 
 
 def construct_resolved_ref_url(row: pd.Series):
     """
     construct_resolved_ref_url constructs a resolved reference URL based on RFNETLOC and RFPATH columns
 
-    :param row: traffic DataFrame row
+    :param row: events DataFrame row
     :return:
     """
     netloc = row[RFNETLOC]
@@ -99,22 +99,22 @@ def construct_resolved_ref_url(row: pd.Series):
     return fullpath
 
 
-def add_resolved_url(traffic: pd.DataFrame):
+def add_resolved_url(events: pd.DataFrame):
     """
     add_resolved_url adds a resolved URL column to a DataFrame in RESOLVEDURL column. It requires the DataFrame to already have two
     columns, defined in PAGEURL and CLEANPATH variables.
 
-    :param traffic: traffic DataFrame
+    :param events: events DataFrame
     :return:
     """
-    traffic[RESOLVEDURL] = traffic.apply(construct_resolved_url, axis=1)
+    events[RESOLVEDURL] = events.apply(construct_resolved_url, axis=1)
 
 
 def construct_resolved_url(row: pd.Series):
     """
     construct_resolved_url constructs a resolved URL based on two columns (PAGEURL and CLEANPATH) in pandas Series
 
-    :param row: traffic DataFrame row
+    :param row: events DataFrame row
     :return: resolved URL
     """
     pageUrl = row[PAGEURL]
@@ -128,25 +128,25 @@ def construct_resolved_url(row: pd.Series):
     return "/".join(fullpath)
 
 
-def build_session_index(traffic: pd.DataFrame, colName: str) -> dict:
+def build_session_index(events: pd.DataFrame, colName: str) -> dict:
     """
     build_session_index builds an inverted index of values in 'colName' to list of sessions.
 
-    :param traffic: traffic DataFrame
+    :param events: events DataFrame
     :param colName: column name to use for building index
     :return: Index of URLs to sets of SIDs
     """
-    unique_session_ids = utils.get_sessions(traffic)
+    unique_session_ids = utils.get_sessions(events)
     sessIndex = defaultdict(set)
     for idx, sid in enumerate(unique_session_ids):
-        sess_df = traffic.loc[sid]
+        sess_df = events.loc[sid]
         for url in set(sess_df[colName].tolist()):
             sessIndex[url].add(sid)
     return sessIndex
 
 
 def get_funnel_in_outs(
-    traffic: pd.DataFrame,
+    events: pd.DataFrame,
     sessionIndex: dict,
     funnel: list,
     colName: str,
@@ -156,7 +156,7 @@ def get_funnel_in_outs(
     get_funnel_in_outs returns 2 dictionaries (one for ingress, one for egress) with ingress and egress counts for a
     specified funnel
 
-    :param traffic: traffic DataFrame
+    :param events: events DataFrame
     :param sessionIndex: inverted index of URLs to SIDs
     :param funnel: funnel list
     :param colName: column name to use
@@ -165,11 +165,11 @@ def get_funnel_in_outs(
     """
     sessFound = get_unordered_sessions_for_funnel(sessionIndex, funnel)
     sessOrdered = get_sessions_with_ordered(
-        traffic, sessFound, funnel, colName, strict=True
+        events, sessFound, funnel, colName, strict=True
     )
     egressCounts = defaultdict(int)
     ingressCounts = defaultdict(int)
-    funnelMatches = utils.filter_traffic(traffic, session=sessOrdered)
+    funnelMatches = utils.filter_events(events, session=sessOrdered)
     uniqSids = utils.get_sessions(funnelMatches)
     for idx, sid in enumerate(uniqSids):
         sess_df = funnelMatches.loc[sid]
@@ -192,14 +192,14 @@ def get_funnel_in_outs(
 
 
 def get_funnel_conversion_stats(
-    traffic: pd.DataFrame, sessionIndex: dict, funnel: list, colName: str
+    events: pd.DataFrame, sessionIndex: dict, funnel: list, colName: str
 ) -> list:
     sessionCounts = []
     for i in range(len(funnel)):
         subfunnel = funnel[: i + 1]
         sessFound = get_unordered_sessions_for_funnel(sessionIndex, subfunnel)
         sessOrdered = get_sessions_with_ordered(
-            traffic, sessFound, subfunnel, colName, strict=True
+            events, sessFound, subfunnel, colName, strict=True
         )
         sessionCounts.append(len(sessOrdered))
     return zip(funnel, sessionCounts)
@@ -223,7 +223,7 @@ def get_session_link(sid: str, OrgId: str, is_staging: bool) -> str:
 
 
 def get_sessions_for_funnel(
-    traffic: pd.DataFrame,
+    events: pd.DataFrame,
     funnel: list,
     useResolvedUrls: bool,
     OrgId: str = None,
@@ -233,7 +233,7 @@ def get_sessions_for_funnel(
 ) -> list:
     """Get a list of sessions where each session contains the specified funnel
 
-    :param traffic: traffic DataFrame
+    :param events: events DataFrame
     :param funnel: funnel of interest
     :param useResolvedUrls: indicates whether original or resolved URLs should be used
     :param OrgId: FullStory OrgId for the organization
@@ -248,16 +248,16 @@ def get_sessions_for_funnel(
         columnToUse = PAGEURL
     if useResolvedUrls:
         url_regex_resolver.resolve_urls(
-            traffic, manage_resolutions.get_regex_dict(), PAGEURL, RESOLVEDURL
+            events, manage_resolutions.get_regex_dict(), PAGEURL, RESOLVEDURL
         )
-    sids = build_and_get_sids_for_funnel(traffic, funnel, columnToUse, strict)
+    sids = build_and_get_sids_for_funnel(events, funnel, columnToUse, strict)
     if numSessions != 0:
         sids = sids[:numSessions]
     sessions = list(map(lambda p: get_session_link(p, OrgId, is_staging), sids))
     return sessions
 
 def get_sessions_for_funnel_and_click(
-    traffic: pd.DataFrame,
+    events: pd.DataFrame,
     funnel: list,
     clicktype: str,
     useResolvedUrls: bool,
@@ -268,7 +268,7 @@ def get_sessions_for_funnel_and_click(
 ) -> list:
     """Get a list of sessions for the specified funnel, where each session has to contain a click of the specified type
 
-    :param traffic: full traffic DataFrame (that includes non-navigate events)
+    :param events: full events DataFrame (that includes non-navigate events)
     :param funnel: funnel of interest
     :param clicktype: the type of click ("rage", "dead", or "error") that we want to filter for
     :param useResolvedUrls: indicates whether original or resolved URLs should be used
@@ -278,26 +278,26 @@ def get_sessions_for_funnel_and_click(
     :param numSessions: number of sessions to return (if 0, return all available)
     :return: list of session URLs
     """
-    filtered = analyze_clicks.filter_dataset_by_clicktype(traffic, clicktype)
+    filtered = analyze_clicks.filter_dataset_by_clicktype(events, clicktype)
     filtered = analyze_clicks.remove_non_navigation(filtered)
     return get_sessions_for_funnel(filtered, funnel, useResolvedUrls, OrgId, is_staging, strict, numSessions)
 
 def build_and_get_sids_for_funnel(
-    traffic: pd.DataFrame, funnel: list, colName: str, strict: bool = True
+    events: pd.DataFrame, funnel: list, colName: str, strict: bool = True
 ) -> list:
-    si = build_session_index(traffic, colName)
-    return get_sids_for_funnel(traffic, si, funnel, colName, strict)
+    si = build_session_index(events, colName)
+    return get_sids_for_funnel(events, si, funnel, colName, strict)
 
 
 def get_sids_for_funnel(
-    traffic: pd.DataFrame,
+    events: pd.DataFrame,
     sessionIndex: dict,
     funnel: list,
     colName: str,
     strict: bool = True,
 ) -> list:
     sessFound = get_unordered_sessions_for_funnel(sessionIndex, funnel)
-    sessOrdered = get_sessions_with_ordered(traffic, sessFound, funnel, colName, strict)
+    sessOrdered = get_sessions_with_ordered(events, sessFound, funnel, colName, strict)
     return sessOrdered
 
 
@@ -388,7 +388,7 @@ def plot_counts_by_freq(counts, topcounts: int, title: str, isSortedList: bool):
 
 
 def get_sessions_with_ordered(
-    traffic: pd.DataFrame,
+    events: pd.DataFrame,
     sessUnordered: set,
     funnel: list,
     colName: str,
@@ -399,18 +399,18 @@ def get_sessions_with_ordered(
     is a set of sessions containing URLs in the funnel in any order. If strict is set to True, the order in the funnel is followed
     exactly (no additional URLs in between). (Alternative is currently not implemented)
 
-    :param traffic: traffic DataFrame
+    :param events: events DataFrame
     :param sessUnordered: set of sessions with URLs of interest in any order
     :param funnel: funnel list
     :param colName: column name to use
     :param strict: if True, enforce the funnel order strictly
     :return: list of sessions containing the funnel
     """
-    filteredTraffic = utils.filter_traffic(traffic, session=list(sessUnordered))
-    uniqSids = utils.get_sessions(filteredTraffic)
+    filteredEvents = utils.filter_events(events, session=list(sessUnordered))
+    uniqSids = utils.get_sessions(filteredEvents)
     sessOrdered = []
     for idx, sid in enumerate(uniqSids):
-        sess_df = filteredTraffic.loc[sid]
+        sess_df = filteredEvents.loc[sid]
         if len(get_sublist_indices(funnel, sess_df[colName].tolist(), strict)) > 0:
             sessOrdered.append(sid)
     return sessOrdered

@@ -53,7 +53,7 @@ def filter_dataset_by_clicktype(df: pd.DataFrame, clicktype: str) -> pd.DataFram
         print("Error: unknown click type: " + clicktype)
         return None
     si = build_clicktype_index(df)
-    filtered = utils.filter_traffic(df, session=si[clicktype])
+    filtered = utils.filter_events(df, session=si[clicktype])
     return filtered
 
 def remove_non_navigation(df: pd.DataFrame) -> pd.DataFrame:

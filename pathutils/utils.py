@@ -62,13 +62,13 @@ def pseudo_beaker(UserId: str, SessionId: str, replay=True, scope=True, browser=
     return url_dict
 
 
-def get_sessions(traffic_df: pd.DataFrame) -> list:
+def get_sessions(events_df: pd.DataFrame) -> list:
     """
     Obtain a tuple of distinct session ids present in the input dataframe
-    that has been multi-indexed by `preproc_traffic`.
+    that has been multi-indexed by `preproc_events`.
 
     Input:
-      traffic_df:  dataframe of traffic
+      events_df:  dataframe of events
 
     Output:
       list of distinct session ids present in the input
@@ -76,18 +76,18 @@ def get_sessions(traffic_df: pd.DataFrame) -> list:
     # get_level_values(0) only pulls the `sid` first part of the multi-index,
     # at position 0. The second index (at position 1) is the time-ordered
     # position
-    return list(set(traffic_df.index.get_level_values(0)))
+    return list(set(events_df.index.get_level_values(0)))
 
 
-def preproc_traffic(traffic_df: pd.DataFrame) -> pd.DataFrame:
+def preproc_events(events_df: pd.DataFrame) -> pd.DataFrame:
     """
     Input:
-      traffic_df:  dataframe imported from BigQuery
+      events_df:  dataframe imported from BigQuery
 
     Output:
       Same dataframe with additional columns and datetime format for event time
 
-    traffic_df is re-indexed according to
+    events_df is re-indexed according to
     unique sessions (sid, i), where `sid` = (UserId + SessionId) as a
     concatenated string, and `i`, the original integer index.
 
@@ -97,44 +97,44 @@ def preproc_traffic(traffic_df: pd.DataFrame) -> pd.DataFrame:
 
     Event start times are transformed to DateTime from string.
     """
-    traffic_df["distinct_session_id"] = traffic_df["UserId"].astype(
+    events_df["distinct_session_id"] = events_df["UserId"].astype(
         str
-    ) + traffic_df["SessionId"].astype(str)
+    ) + events_df["SessionId"].astype(str)
 
     # Time
-    traffic_df["EventStart"] = pd.to_datetime(traffic_df["EventStart"])
-    # traffic_df.sort_values("EventStart", inplace=True)
+    events_df["EventStart"] = pd.to_datetime(events_df["EventStart"])
+    # events_df.sort_values("EventStart", inplace=True)
 
-    traffic_df.set_index(
+    events_df.set_index(
         pd.MultiIndex.from_arrays(
-            (pd.Index(traffic_df["distinct_session_id"]), traffic_df.index),
+            (pd.Index(events_df["distinct_session_id"]), events_df.index),
             names=("sid", "i"),
         ),
         inplace=True,
     )
 
-    # Note that `traffic_df.index.get_level_values(0)` will have repeats of the
+    # Note that `events_df.index.get_level_values(0)` will have repeats of the
     # unique session IDs over their corresponding rows, and so
-    # it's of length `len(traffic_df)` not `len(unique_session_ids)`
+    # it's of length `len(events_df)` not `len(unique_session_ids)`
 
     # sort event times per session
-    traffic_df = (
-        traffic_df.reset_index()
+    events_df = (
+        events_df.reset_index()
         .sort_values(["sid", "EventStart"], ascending=[1, 1])
         .set_index(["sid", "i"])
     )
     # create a proper incrementing integer index for each session, move unique
     # `i to a column
-    traffic_df["idx"] = traffic_df.groupby("sid").cumcount()
-    return traffic_df.reset_index().set_index(["sid", "idx"])
+    events_df["idx"] = events_df.groupby("sid").cumcount()
+    return events_df.reset_index().set_index(["sid", "idx"])
 
 
-def filter_traffic(
-    traffic_df: pd.DataFrame, org=None, session=None, start_time=None
+def filter_events(
+    events_df: pd.DataFrame, org=None, session=None, start_time=None
 ) -> pd.DataFrame:
     """
     Inputs:
-      traffic_df:  dataframe with multi-index
+      events_df:  dataframe with multi-index
       org:         OrgId string or sequence of these
       session:     UserId+SessionId string or sequence of these
       start_time:  Singleton or sequence of pairs (t0, t1) bounding
@@ -150,10 +150,10 @@ def filter_traffic(
         if isinstance(org, str):
             # singleton
             org = [org]
-        traffic_df = traffic_df.loc[
+        events_df = events_df.loc[
             list(
                 set(
-                    traffic_df[traffic_df["OrgId"].isin(org)][
+                    events_df[events_df["OrgId"].isin(org)][
                         "distinct_session_id"
                     ]
                 )
@@ -165,7 +165,7 @@ def filter_traffic(
         if isinstance(session, str):
             # singleton
             session = [session]
-        traffic_df = traffic_df.loc[session]
+        events_df = events_df.loc[session]
 
     # reduce dataset according to any time specification (tuple of start, end
     # times)
@@ -176,7 +176,7 @@ def filter_traffic(
         # ensure only whole sessions are found that start in this range.
         # (assumes original data set does not truncate any sessions.)
         # get all session start times
-        groups = traffic_df.groupby("distinct_session_id")["EventStart"].min()
+        groups = events_df.groupby("distinct_session_id")["EventStart"].min()
         sids = groups[groups.between(t0, t1)].index
-        traffic_df = traffic_df.loc[sids]
-    return traffic_df
+        events_df = events_df.loc[sids]
+    return events_df

@@ -13,10 +13,10 @@ from pathutils import analyze_clicks, analyze_traffic, manage_resolutions, url_r
 
 EVENTSTART = "EventStart"
 
-def get_timing_for_funnel(trafficfull: DataFrame, funnel: list, useResolvedUrls: bool) -> list:
+def get_timing_for_funnel(eventsfull: DataFrame, funnel: list, useResolvedUrls: bool) -> list:
     """Get a list of funnel step times (amounts of time users spend before navigating to next step) for a funnel
 
-    :param trafficfull: full traffic DataFrame (that includes non-navigate events)
+    :param eventsfull: full events DataFrame (that includes non-navigate events)
     :param funnel: funnel of interest
     :param useResolvedUrls: indicates whether original or resolved URLs should be used
     :return: list of funnel step times for each step
@@ -24,18 +24,18 @@ def get_timing_for_funnel(trafficfull: DataFrame, funnel: list, useResolvedUrls:
     funneltimes = []
     for i in range(len(funnel)):
         funneltimes.append([])
-    traffic = analyze_clicks.remove_non_navigation(trafficfull)
+    events = analyze_clicks.remove_non_navigation(eventsfull)
     if useResolvedUrls:
         columnToUse = analyze_traffic.RESOLVEDURL
     else:
         columnToUse = analyze_traffic.PAGEURL
     if useResolvedUrls:
-        url_regex_resolver.resolve_urls(traffic, manage_resolutions.get_regex_dict(), analyze_traffic.PAGEURL, analyze_traffic.RESOLVEDURL)
-    si = analyze_traffic.build_session_index(traffic, columnToUse)
+        url_regex_resolver.resolve_urls(events, manage_resolutions.get_regex_dict(), analyze_traffic.PAGEURL, analyze_traffic.RESOLVEDURL)
+    si = analyze_traffic.build_session_index(events, columnToUse)
     sessFound = analyze_traffic.get_unordered_sessions_for_funnel(si, funnel)
-    sessOrdered = analyze_traffic.get_sessions_with_ordered(traffic, sessFound, funnel, columnToUse, strict=True)
+    sessOrdered = analyze_traffic.get_sessions_with_ordered(events, sessFound, funnel, columnToUse, strict=True)
     for sid in sessOrdered:
-        sess_df = traffic.loc[sid]
+        sess_df = events.loc[sid]
         indices = analyze_traffic.get_sublist_indices(funnel, sess_df[columnToUse].tolist(), True)
         for index in indices:
             timestamps = []

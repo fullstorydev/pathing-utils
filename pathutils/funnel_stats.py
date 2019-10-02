@@ -17,19 +17,19 @@ def print_in_outs(folder, funnelFile, useResolvedUrls, limit_rows):
     with open(funnelFile, "r") as fread:
         tFile = json.load(fread)
     funnel = tFile["funnel"]
-    traffic = analyze_traffic.get_hauser_as_df(folder)
-    traffic = utils.preproc_traffic(traffic)
-    funnelCounts = get_funnel_stats(traffic, funnel, useResolvedUrls, limit_rows)
+    events = analyze_traffic.get_hauser_as_df(folder)
+    events = utils.preproc_events(events)
+    funnelCounts = get_funnel_stats(events, funnel, useResolvedUrls, limit_rows)
     print_funnelcounts(funnelCounts)
 
 
-def get_funnel_stats(traffic: DataFrame, funnel: list, useResolvedUrls: bool, limit_rows: int = 0) -> list:
+def get_funnel_stats(events: DataFrame, funnel: list, useResolvedUrls: bool, limit_rows: int = 0) -> list:
     """Get conversion statistics for a funnel
 
-    :param traffic: traffic DataFrame
+    :param events: events DataFrame
     :param funnel: funnel of interest
     :param useResolvedUrls: indicates whether original or resolved URLs should be used
-    :param limit_rows: number of rows of traffic DataFrame to use (use all rows if 0)
+    :param limit_rows: number of rows of events DataFrame to use (use all rows if 0)
     :return: sorted list of funnel conversions by step
     """
     if useResolvedUrls:
@@ -37,11 +37,11 @@ def get_funnel_stats(traffic: DataFrame, funnel: list, useResolvedUrls: bool, li
     else:
         columnToUse = analyze_traffic.PAGEURL
     if limit_rows != 0:
-        traffic = traffic.head(limit_rows)
+        events = events.head(limit_rows)
     if useResolvedUrls:
-        url_regex_resolver.resolve_urls(traffic, manage_resolutions.get_regex_dict(), analyze_traffic.PAGEURL, analyze_traffic.RESOLVEDURL)
-    si = analyze_traffic.build_session_index(traffic, columnToUse)
-    funnelCounts = analyze_traffic.get_funnel_conversion_stats(traffic, si, funnel, columnToUse)
+        url_regex_resolver.resolve_urls(events, manage_resolutions.get_regex_dict(), analyze_traffic.PAGEURL, analyze_traffic.RESOLVEDURL)
+    si = analyze_traffic.build_session_index(events, columnToUse)
+    funnelCounts = analyze_traffic.get_funnel_conversion_stats(events, si, funnel, columnToUse)
     funnelCounts = list(funnelCounts)
     return funnelCounts
 

@@ -17,22 +17,22 @@ def print_in_outs(folder, funnelFile, useResolvedUrls, limit_rows, doPlot):
     with open(funnelFile, "r") as fread:
         tFile = json.load(fread)
     funnel = tFile["funnel"]
-    traffic = analyze_traffic.get_hauser_as_df(folder)
-    traffic = utils.preproc_traffic(traffic)
-    ingressCounts, egressCounts = get_in_outs(traffic, funnel, useResolvedUrls, limit_rows)
+    events = analyze_traffic.get_hauser_as_df(folder)
+    events = utils.preproc_events(events)
+    ingressCounts, egressCounts = get_in_outs(events, funnel, useResolvedUrls, limit_rows)
     if not doPlot:
         analyze_traffic.print_in_outs(ingressCounts, egressCounts)
     else:
         analyze_traffic.plot_in_outs(ingressCounts, egressCounts)
 
 
-def get_in_outs(traffic: DataFrame, funnel: list, useResolvedUrls: bool, limit_rows: int = 0) -> (dict, dict):
+def get_in_outs(events: DataFrame, funnel: list, useResolvedUrls: bool, limit_rows: int = 0) -> (dict, dict):
     """Get information about inflows and outflows for a funnel
 
-    :param traffic: traffic DataFrame
+    :param events: events DataFrame
     :param funnel: funnel of interest
     :param useResolvedUrls: indicates whether original or resolved URLs should be used
-    :param limit_rows: number of rows of traffic DataFrame to use (use all rows if 0)
+    :param limit_rows: number of rows of events DataFrame to use (use all rows if 0)
     :return: a pair of dictionaries, with inflow and outflow URL frequency counts
     """
     if useResolvedUrls:
@@ -40,12 +40,11 @@ def get_in_outs(traffic: DataFrame, funnel: list, useResolvedUrls: bool, limit_r
     else:
         columnToUse = analyze_traffic.PAGEURL
     if limit_rows != 0:
-        traffic = traffic.head(limit_rows)
+        events = events.head(limit_rows)
     if useResolvedUrls:
-        url_regex_resolver.resolve_urls(traffic, manage_resolutions.get_regex_dict(), analyze_traffic.PAGEURL, analyze_traffic.RESOLVEDURL)
-    si = analyze_traffic.build_session_index(traffic, columnToUse)
-    ingressCounts, egressCounts = analyze_traffic.get_funnel_in_outs(traffic, si, funnel, columnToUse, analyze_traffic.REFERAL)
-    print("done generating inflows and outflows") # this for a  better jupyter notebook experience
+        url_regex_resolver.resolve_urls(events, manage_resolutions.get_regex_dict(), analyze_traffic.PAGEURL, analyze_traffic.RESOLVEDURL)
+    si = analyze_traffic.build_session_index(events, columnToUse)
+    ingressCounts, egressCounts = analyze_traffic.get_funnel_in_outs(events, si, funnel, columnToUse, analyze_traffic.REFERAL)
     return ingressCounts, egressCounts
 
 if __name__ == "__main__":

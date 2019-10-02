@@ -36,7 +36,7 @@ LIMITROWS = 0
 
 
 dffull = analyze_traffic.get_hauser_as_df(HAUSERDIR, navigate_only=False)
-dffull = utils.preproc_traffic(dffull)
+dffull = utils.preproc_events(dffull)
 #Optional: you can also filter your dataset to only include sessions with clicks of certain type
 #dffull = analyze_clicks.filter_dataset_by_clicktype(dffull, "rage")
 df = analyze_clicks.remove_non_navigation(dffull)
