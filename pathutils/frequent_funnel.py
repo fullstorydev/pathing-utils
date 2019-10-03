@@ -15,19 +15,19 @@ from pathutils import analyze_traffic, utils, url_regex_resolver, manage_resolut
 
 def get_top_funnels(funurl, funlen, useResolvedUrls, folder, limit_rows, numResults):
     df = analyze_traffic.get_hauser_as_df(folder)
-    df = utils.preproc_traffic(df)
+    df = utils.preproc_events(df)
     funnelCounts = get_top_funnels_df(funurl, funlen, useResolvedUrls, df, limit_rows)
     print_top_funnel_counts(funnelCounts, numResults)
 
 
-def get_top_funnels_df(funurl: str, funlen: int, useResolvedUrls: bool, traffic: DataFrame, limit_rows: int = 0) -> dict:
+def get_top_funnels_df(funurl: str, funlen: int, useResolvedUrls: bool, events: DataFrame, limit_rows: int = 0) -> dict:
     """Get top funnels of specified length which contain the specified URL
 
     :param funurl: URL that should be contained in the funnel
     :param funlen: funnel length
     :param useResolvedUrls: indicates whether original or resolved URLs should be used
-    :param traffic: traffic DataFrame
-    :param limit_rows: number of rows of traffic DataFrame to use (use all rows if 0)
+    :param events: events DataFrame
+    :param limit_rows: number of rows of events DataFrame to use (use all rows if 0)
     :return: dictionary of funnels and their frequencies
     """
     if useResolvedUrls:
@@ -35,21 +35,21 @@ def get_top_funnels_df(funurl: str, funlen: int, useResolvedUrls: bool, traffic:
     else:
         columnToUse = analyze_traffic.PAGEURL
     if limit_rows != 0:
-        traffic = traffic.head(limit_rows)
+        events = events.head(limit_rows)
     if useResolvedUrls:
-        url_regex_resolver.resolve_urls(traffic, manage_resolutions.get_regex_dict(), analyze_traffic.PAGEURL, analyze_traffic.RESOLVEDURL)
-    si = analyze_traffic.build_session_index(traffic, columnToUse)
-    funnelCounts = get_funnel_lists(traffic, si, funurl, funlen, columnToUse)
+        url_regex_resolver.resolve_urls(events, manage_resolutions.get_regex_dict(), analyze_traffic.PAGEURL, analyze_traffic.RESOLVEDURL)
+    si = analyze_traffic.build_session_index(events, columnToUse)
+    funnelCounts = get_funnel_lists(events, si, funurl, funlen, columnToUse)
     return funnelCounts
 
 
-def get_funnel_lists(traffic, sessIndex, funurl, funlen, columnToUse):
+def get_funnel_lists(events, sessIndex, funurl, funlen, columnToUse):
     sessions = sessIndex[funurl]
-    filteredTraffic = utils.filter_traffic(traffic, session=list(sessions))
-    uniqSids = utils.get_sessions(filteredTraffic)
+    filteredEvents = utils.filter_events(events, session=list(sessions))
+    uniqSids = utils.get_sessions(filteredEvents)
     funnelCounts = defaultdict(int)
     for idx, sid in enumerate(uniqSids):
-        sess_df = filteredTraffic.loc[sid]
+        sess_df = filteredEvents.loc[sid]
         sess_funnels = get_funnels_for_session(sess_df[columnToUse].tolist(), funurl, funlen)
         for fun in sess_funnels:
             funnelCounts[fun] += 1

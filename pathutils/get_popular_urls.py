@@ -13,15 +13,15 @@ from pathutils import analyze_traffic, utils, url_regex_resolver, manage_resolut
 
 def print_popular(folder, useResolvedUrls, limit_rows, topCounts):
     df = analyze_traffic.get_hauser_as_df(folder)
-    df = utils.preproc_traffic(df)
+    df = utils.preproc_events(df)
     urlCounts = get_popular(df, useResolvedUrls, limit_rows)
     print_top_url_counts(urlCounts, topCounts)
 
 
-def get_popular(traffic: pd.DataFrame, useResolvedUrls: bool, limit_rows: int = 0) -> dict:
+def get_popular(events: pd.DataFrame, useResolvedUrls: bool, limit_rows: int = 0) -> dict:
     """Returns a dictionary of visited URLs and visit counts for each URL
 
-    :param traffic: traffic DataFrame
+    :param events: events DataFrame
     :param useResolvedUrls: boolean indicating whether original or resolved URLs should be used
     :param limit_rows: number of rows from the original DataFrame to use (if 0, then use entire DataFrame)
     :return:
@@ -31,10 +31,10 @@ def get_popular(traffic: pd.DataFrame, useResolvedUrls: bool, limit_rows: int = 
     else:
         columnToUse = analyze_traffic.PAGEURL
     if limit_rows != 0:
-        traffic = traffic.head(limit_rows)
+        events = events.head(limit_rows)
     if useResolvedUrls:
-        url_regex_resolver.resolve_urls(traffic, manage_resolutions.get_regex_dict(), analyze_traffic.PAGEURL, analyze_traffic.RESOLVEDURL)
-    si = analyze_traffic.build_session_index(traffic, columnToUse)
+        url_regex_resolver.resolve_urls(events, manage_resolutions.get_regex_dict(), analyze_traffic.PAGEURL, analyze_traffic.RESOLVEDURL)
+    si = analyze_traffic.build_session_index(events, columnToUse)
     urlCounts = analyze_traffic.get_counts_for_url(si)
     return urlCounts
 

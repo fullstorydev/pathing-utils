@@ -27,11 +27,11 @@ def show_sankey(folder, funnelFile, useResolvedUrls, limitBranches, title):
     with open(funnelFile, "r") as fread:
         tFile = json.load(fread)
     funnel = tFile["funnel"]
-    traffic = analyze_traffic.get_hauser_as_df(folder)
-    traffic = utils.preproc_traffic(traffic)
-    plot_funnel(title, traffic, funnel, useResolvedUrls, limitBranches)
+    events = analyze_traffic.get_hauser_as_df(folder)
+    events = utils.preproc_events(events)
+    plot_funnel(title, events, funnel, useResolvedUrls, limitBranches)
 
-def get_funnel_lists(title: str, traffic: pd.DataFrame, funnel: list, useResolvedUrls: bool, cutoff: int=10):
+def get_funnel_lists(title: str, events: pd.DataFrame, funnel: list, useResolvedUrls: bool, cutoff: int=10):
     labels = []
     colors = []
     sources = []
@@ -54,7 +54,7 @@ def get_funnel_lists(title: str, traffic: pd.DataFrame, funnel: list, useResolve
 
     nodecount = len(funnel)
 
-    funnel_counts = get_funnel_stats(traffic, funnel, useResolvedUrls, 0)
+    funnel_counts = get_funnel_stats(events, funnel, useResolvedUrls, 0)
     totalIn = funnel_counts[0][1]
 
     for i in range(len(funnel_counts) - 1):
@@ -64,7 +64,7 @@ def get_funnel_lists(title: str, traffic: pd.DataFrame, funnel: list, useResolve
 
     # Add funnel sources
     subfunnel = funnel[:1]
-    ingress, egress = get_in_outs(traffic, subfunnel, useResolvedUrls, 0)
+    ingress, egress = get_in_outs(events, subfunnel, useResolvedUrls, 0)
     sortIn = sorted_dict_items(ingress, True)
     sortIn = sortIn[:cutoff]
     for input in sortIn:
@@ -87,7 +87,7 @@ def get_funnel_lists(title: str, traffic: pd.DataFrame, funnel: list, useResolve
     # Add funnel sinks
     for j in range(1, len(funnel) + 1):
         subfunnel = funnel[:j]
-        ingress, egress = get_in_outs(traffic, subfunnel, useResolvedUrls, 0)
+        ingress, egress = get_in_outs(events, subfunnel, useResolvedUrls, 0)
         sortOut = sorted_dict_items(egress, True)
         sortOutCut = sortOut[:cutoff]
         nextStepInFun = False
@@ -132,17 +132,17 @@ def get_funnel_lists(title: str, traffic: pd.DataFrame, funnel: list, useResolve
     return labels, colors, sources, targets, values, title
 
 
-def plot_funnel(title: str, traffic: pd.DataFrame, funnel: list, useResolvedUrls: bool, cutoff: int=10):
+def plot_funnel(title: str, events: pd.DataFrame, funnel: list, useResolvedUrls: bool, cutoff: int=10):
     """Plot sankey diagram for a funnel
 
     :param title: title for the sankey diagram
-    :param traffic: traffic dataframe
+    :param events: events dataframe
     :param funnel: funnel to be plotted
     :param useResolvedUrls: indicates whether original or resolved URLs should be used
     :param cutoff: number of inflow/outflow nodes to plot for each sankey node (all remaining nodes get grouped into Other)
     :return:
     """
-    labels, colors, sources, targets, values, title = get_funnel_lists(title, traffic, funnel, useResolvedUrls, cutoff)
+    labels, colors, sources, targets, values, title = get_funnel_lists(title, events, funnel, useResolvedUrls, cutoff)
 
     fig = gobj.Figure(data=[gobj.Sankey(
         arrangement="freeform",

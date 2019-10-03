@@ -1,6 +1,6 @@
 # pathutils
 
-`pathutils` is a collection of utilities to gain user path insights from exported FullStory data.
+`pathutils` is a collection of utilities to gain user path insights from exported FullStory data..
 
 ## Local install
 
@@ -62,7 +62,7 @@ From here, you have several options to visualize your data set. In no particular
 ### Plot a diagram of top most visited URLs
 
 According to the way FullStory records user activity, a "visit" is defined as having a `navigate` event associated with the URL (so multiple visits can occur within the same session, or even consecutively). The list of URLs and corresponding visit counts can be produced by calling the `get_popular_urls.get_popular` function. The function parameters are:
-* `traffic` - dataframe containing the traffic data
+* `events` - dataframe containing the events data
 * `useResolvedUrls` - boolean flag. If `False`, standard page URLs will be used. If `True`, these page URLs can be grouped according to provided regex resolution rules (see URL Resolution section)
 * `limit_rows` - limit rows to a specific number of events (use full dataset if 0, which is default)
 
@@ -75,7 +75,7 @@ FullStory users often ask: what makes a good funnel? `pathutils` can help with p
 * `funurl` - URL that should be contained in the funnel
 * `funlen` - length of the funnels to consider
 * `useResolvedUrl`
-* `traffic`
+* `events`
 * `limit_rows`
 
 The function will return an unsorted list of all the funnels of specified length, and their frequency counts. The list can be sorted and trimmed by invoking `frequent_funnel.show_top_funnel`.
@@ -93,7 +93,7 @@ The arguments are slightly different for the command line version. The arguments
 ### Show conversion statistics for the specified funnel
 
 `funnel_stats.get_funnel_stats` function will return the number of sessions in which the user has navigated to a specific step of the funnel immediately after having navigated all the previous steps. For example, the returned count number for "Step 3" of a funnel will be the number of sessions that contain navigation sequence "Step 1, Step 2, Step 3". The function parameters are:
-* `traffic`
+* `events`
 * `funnel`
 * `useResolvedUrls`
 * `limit_rows`
@@ -104,7 +104,7 @@ The arguments are slightly different for the command line version. The arguments
 ### Generate session links for the specified funnel
 
 To generate links to sessions containing the funnel, invoke `analyze_traffic.get_sessions_for_funnel` function with the following parameters:
-* `traffic`
+* `events`
 * `funnel`
 * `useResolvedUrls`
 * `OrgId` - your FullStory OrgId
@@ -114,12 +114,12 @@ To generate links to sessions containing the funnel, invoke `analyze_traffic.get
 
 Session link tool can currently be used from code only (not as a command line tool).
 
-You can also get only the session links that contain a certain click type, by invoking `analyze_traffic.get_sessions_for_funnel_and_click`. The only differences from the above function are the following: `get_sessions_for_funnel_and_click` expects an additional `clicktype` parameter, and also a full dataset passed as `traffic` (as opposed to a `navigate`-only dataset).
+You can also get only the session links that contain a certain click type, by invoking `analyze_traffic.get_sessions_for_funnel_and_click`. The only differences from the above function are the following: `get_sessions_for_funnel_and_click` expects an additional `clicktype` parameter, and also a full dataset passed as `events` (as opposed to a `navigate`-only dataset).
 
 ### Generate inflow and outflow counts for the specified funnel
 
 You can also find most frequent entry and exit points for a funnel. Invoking `funnel_in_outs.get_in_outs` will return 2 dictionaries (ingress and egress). The ingress dictionary contains the URLs from which the users have entered the funnel, and the frequency count for each URL. The egress dictionary does the same for URLs to which the users exit after completing the funnel. The function parameters are:
-* `traffic`
+* `events`
 * `funnel`
 * `useResolvedUrls`
 * `limit_rows`
@@ -131,7 +131,7 @@ You can also find most frequent entry and exit points for a funnel. Invoking `fu
 
 Use the `sankey_funnel.plot_funnel` function to plot a Sankey diagram of funnel statistics and inflows/outflows with the following parameters:
 * `title` - plot title
-* `traffic`
+* `events`
 * `funnel`
 * `useResolvedUrls`
 * `cutoff` - maximum number of distinct input or output branches from each Sankey node (all additional branches get grouped into "Other" category)
@@ -142,7 +142,7 @@ Use the `sankey_funnel.plot_funnel` function to plot a Sankey diagram of funnel 
 ### View timing statistics for the specified funnel
 
 Once you have a funnel in mind, `pathutils` allows you to view timing information about it -- that is, gather insights into how much time users are spending at every step of the funnel before advancing to the next. Invoking `analyze_timing.get_timing_for_funnel` returns a complete set of timing results. The function parameters are:
- * `trafficfull`
+ * `eventsfull`
  * `funnel`
  * `useResolvedUrls`
 
