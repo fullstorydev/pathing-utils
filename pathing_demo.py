@@ -36,7 +36,6 @@ LIMITROWS = 0
 
 
 dffull = analyze_traffic.get_hauser_as_df(HAUSERDIR, navigate_only=False)
-dffull = utils.preproc_events(dffull)
 
 
 # ## Inspect your dataframe(s)
@@ -45,6 +44,7 @@ dffull = utils.preproc_events(dffull)
 # In[4]:
 
 
+dffull = utils.preproc_events(dffull)
 dffull.head(15)
 
 
