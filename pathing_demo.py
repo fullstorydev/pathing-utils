@@ -30,36 +30,40 @@ HAUSERDIR = "sampledata"
 LIMITROWS = 0
 
 
-# ## Load Hauser data into a dataframe
+# ## Load Data Export data into a dataframe
 
 # In[3]:
 
 
 dffull = analyze_traffic.get_hauser_as_df(HAUSERDIR, navigate_only=False)
 dffull = utils.preproc_events(dffull)
+
+
+# ## Inspect your dataframe(s)
+# You can find Data Export field descriptions on FullStory's API reference site: https://developer.fullstory.com/get-data-export
+
+# In[7]:
+
+
+dffull.head(15)
+
+
+# ## Filter out any events that aren't navigation events
+
+# In[11]:
+
+
 #Optional: you can also filter your dataset to only include sessions with clicks of certain type
 #dffull = analyze_clicks.filter_dataset_by_clicktype(dffull, "rage")
 df = analyze_clicks.remove_non_navigation(dffull)
 useResolvedUrls = False
 
-
-# ## Inspect your dataframe(s)
-
-# In[8]:
-
-
-dffull.head(5)
-
-
-# In[9]:
-
-
-df.head(5)
+df.head(15)
 
 
 # ## Plot a diagram of top most visited URLs
 
-# In[4]:
+# In[10]:
 
 
 url_counts = get_popular_urls.get_popular(df, useResolvedUrls, LIMITROWS)
