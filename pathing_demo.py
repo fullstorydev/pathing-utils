@@ -30,38 +30,41 @@ HAUSERDIR = "sampledata"
 LIMITROWS = 0
 
 
-# ## Load Hauser data into a dataframe
+# ## Load Data Export data into a dataframe
 
 # In[3]:
 
 
 dffull = analyze_traffic.get_hauser_as_df(HAUSERDIR, navigate_only=False)
-dffull = utils.preproc_events(dffull)
-#Optional: you can also filter your dataset to only include sessions with clicks of certain type
-#dffull = analyze_clicks.filter_dataset_by_clicktype(dffull, "rage")
-df = analyze_clicks.remove_non_navigation(dffull)
-useResolvedUrls = False
 
 
 # ## Inspect your dataframe(s)
-
-# In[8]:
-
-
-dffull.head(5)
-
-
-# In[9]:
-
-
-df.head(5)
-
-
-# ## Plot a diagram of top most visited URLs
+# You can find Data Export field descriptions on FullStory's API reference site: https://developer.fullstory.com/get-data-export
 
 # In[4]:
 
 
+dffull = utils.preproc_events(dffull)
+dffull.head(15)
+
+
+# ## Filter out any events that aren't navigation events
+
+# In[5]:
+
+
+#Optional: you can also filter your dataset to only include sessions with clicks of certain type
+#dffull = analyze_clicks.filter_dataset_by_clicktype(dffull, "rage")
+df = analyze_clicks.remove_non_navigation(dffull)
+df.head(15)
+
+
+# ## Plot a diagram of top most visited URLs
+
+# In[6]:
+
+
+useResolvedUrls = False
 url_counts = get_popular_urls.get_popular(df, useResolvedUrls, LIMITROWS)
 TOPCOUNTS = 20 # limit output rows
 analyze_traffic.plot_counts_by_freq(url_counts, TOPCOUNTS, "URL Counts", False)
@@ -69,7 +72,7 @@ analyze_traffic.plot_counts_by_freq(url_counts, TOPCOUNTS, "URL Counts", False)
 
 # ## Show common funnels that include the specified URL
 
-# In[5]:
+# In[7]:
 
 
 TESTURL = "https://www.oodatime.com/cart"
@@ -81,7 +84,7 @@ frequent_funnel.print_top_funnel_counts(top_funnels, NUMFUNNELSTOSHOW)
 
 # ## Show conversion statistics for the specified funnel
 
-# In[6]:
+# In[8]:
 
 
 test_funnel=["https://www.oodatime.com/collections/mens",
@@ -93,7 +96,7 @@ analyze_traffic.plot_counts_by_freq(funnel_counts, 0, "Funnel Counts", True)
 
 # ## Plot sankey diagram for the specified funnel
 
-# In[8]:
+# In[9]:
 
 
 sankey_funnel.plot_funnel("Blue Watch Funnel", df, test_funnel, useResolvedUrls, cutoff=4)
@@ -103,7 +106,7 @@ sankey_funnel.plot_funnel("Blue Watch Funnel", df, test_funnel, useResolvedUrls,
 
 # **Note:** This only works if you are a FullStory user (use your Org ID)
 
-# In[8]:
+# In[10]:
 
 
 ORGID = "NHQ5G"
@@ -115,7 +118,7 @@ for s in sessions:
 
 # ## Generate session links for a funnel that include a specified click type
 
-# In[9]:
+# In[11]:
 
 
 ORGID = "NHQ5G"
@@ -128,7 +131,7 @@ for s in sessions:
 
 # ## Print timing stats for a funnel
 
-# In[10]:
+# In[12]:
 
 
 funtimes = analyze_timing.get_timing_for_funnel(dffull, test_funnel, useResolvedUrls)
@@ -137,7 +140,7 @@ analyze_timing.print_timing_averages(test_funnel, funtimes)
 
 # ## Generate timing histogram for 1 step of the funnel
 
-# In[11]:
+# In[13]:
 
 
 analyze_timing.plot_timing_data(test_funnel, funtimes, 0)
@@ -145,7 +148,7 @@ analyze_timing.plot_timing_data(test_funnel, funtimes, 0)
 
 # ## Generate timing histogram for all steps of the funnel
 
-# In[12]:
+# In[14]:
 
 
 analyze_timing.plot_timing_data(test_funnel, funtimes, -1)
@@ -153,7 +156,7 @@ analyze_timing.plot_timing_data(test_funnel, funtimes, -1)
 
 # ## Generate inflow and outflow counts for the specified funnel
 
-# In[13]:
+# In[15]:
 
 
 ingress, egress = funnel_in_outs.get_in_outs(df, test_funnel, useResolvedUrls, LIMITROWS)
@@ -161,7 +164,7 @@ ingress, egress = funnel_in_outs.get_in_outs(df, test_funnel, useResolvedUrls, L
 
 # ## Plot inflow statistics
 
-# In[14]:
+# In[16]:
 
 
 analyze_traffic.plot_counts_by_freq(ingress, 0, "Ingress", False)
@@ -169,7 +172,7 @@ analyze_traffic.plot_counts_by_freq(ingress, 0, "Ingress", False)
 
 # ## Plot outflow statistics
 
-# In[15]:
+# In[17]:
 
 
 analyze_traffic.plot_counts_by_freq(egress, 0, "Egress", False)
@@ -177,7 +180,7 @@ analyze_traffic.plot_counts_by_freq(egress, 0, "Egress", False)
 
 # ## Plot most visited URLs again (for illustration purposes)
 
-# In[16]:
+# In[18]:
 
 
 url_counts = get_popular_urls.get_popular(df, useResolvedUrls, LIMITROWS)
@@ -187,7 +190,7 @@ analyze_traffic.plot_counts_by_freq(url_counts, TOPCOUNTS, "URL Counts", False)
 
 # ## Display current list of URL resolution rules
 
-# In[17]:
+# In[19]:
 
 
 manage_resolutions.show_rules()
@@ -195,7 +198,7 @@ manage_resolutions.show_rules()
 
 # ## Add URL resolution rule
 
-# In[18]:
+# In[20]:
 
 
 manage_resolutions.add_rule("/products/(black|blue|red|gold|rainbow)-watch","/products/<any-watch>")
@@ -203,7 +206,7 @@ manage_resolutions.add_rule("/products/(black|blue|red|gold|rainbow)-watch","/pr
 
 # ## Display URL resolution rules again
 
-# In[19]:
+# In[21]:
 
 
 manage_resolutions.show_rules()
@@ -211,17 +214,11 @@ manage_resolutions.show_rules()
 
 # ## Plot most visited resolved URLs
 
-# In[20]:
+# In[22]:
 
 
 useResolvedUrls = True
 url_counts = get_popular_urls.get_popular(df, useResolvedUrls, LIMITROWS)
 TOPCOUNTS = 20
 analyze_traffic.plot_counts_by_freq(url_counts, TOPCOUNTS, "URL Counts", False)
-
-
-# In[ ]:
-
-
-
 
