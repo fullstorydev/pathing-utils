@@ -30,6 +30,8 @@ HAUSERDIR = "sampledata"
 LIMITROWS = 0
 
 
+# Hauser is an open source tool you can use to export data from FullStory into your filesystem: https://github.com/fullstorydev/hauser
+
 # ## Load Data Export data into a dataframe
 
 # In[3]:
