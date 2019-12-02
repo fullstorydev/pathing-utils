@@ -5,7 +5,7 @@
 
 # ## Setup
 
-# In[1]:
+# In[ ]:
 
 
 # get_ipython().run_line_magic('matplotlib', 'inline')
@@ -20,7 +20,7 @@ from pathutils import (get_popular_urls, funnel_in_outs,funnel_stats, sankey_fun
                        url_regex_resolver, analyze_timing)
 
 
-# In[2]:
+# In[ ]:
 
 
 #HAUSERDIR = "<Path to your Hauser folder>"
@@ -34,7 +34,7 @@ LIMITROWS = 0
 
 # ## Load Data Export data into a dataframe
 
-# In[3]:
+# In[ ]:
 
 
 dffull = analyze_traffic.get_hauser_as_df(HAUSERDIR, navigate_only=False)
@@ -43,7 +43,7 @@ dffull = analyze_traffic.get_hauser_as_df(HAUSERDIR, navigate_only=False)
 # ## Inspect your dataframe(s)
 # You can find Data Export field descriptions on FullStory's API reference site: https://developer.fullstory.com/get-data-export
 
-# In[4]:
+# In[ ]:
 
 
 dffull = utils.preproc_events(dffull)
@@ -52,7 +52,7 @@ dffull.head(15)
 
 # ## Filter out any events that aren't navigation events
 
-# In[5]:
+# In[ ]:
 
 
 #Optional: you can also filter your dataset to only include sessions with clicks of certain type
@@ -63,7 +63,7 @@ df.head(15)
 
 # ## Plot a diagram of top most visited URLs
 
-# In[6]:
+# In[ ]:
 
 
 useResolvedUrls = False
@@ -74,7 +74,7 @@ analyze_traffic.plot_counts_by_freq(url_counts, TOPCOUNTS, "URL Counts", False)
 
 # ## Show common funnels that include the specified URL
 
-# In[7]:
+# In[ ]:
 
 
 TESTURL = "https://www.oodatime.com/cart"
@@ -86,7 +86,7 @@ frequent_funnel.print_top_funnel_counts(top_funnels, NUMFUNNELSTOSHOW)
 
 # ## Show conversion statistics for the specified funnel
 
-# In[8]:
+# In[ ]:
 
 
 test_funnel=["https://www.oodatime.com/collections/mens",
@@ -98,7 +98,7 @@ analyze_traffic.plot_counts_by_freq(funnel_counts, 0, "Funnel Counts", True)
 
 # ## Plot sankey diagram for the specified funnel
 
-# In[9]:
+# In[ ]:
 
 
 sankey_funnel.plot_funnel("Blue Watch Funnel", df, test_funnel, useResolvedUrls, cutoff=4)
@@ -108,7 +108,7 @@ sankey_funnel.plot_funnel("Blue Watch Funnel", df, test_funnel, useResolvedUrls,
 
 # **Note:** This only works if you are a FullStory user (use your Org ID)
 
-# In[10]:
+# In[ ]:
 
 
 ORGID = "NHQ5G"
@@ -120,7 +120,7 @@ for s in sessions:
 
 # ## Generate session links for a funnel that include a specified click type
 
-# In[11]:
+# In[ ]:
 
 
 ORGID = "NHQ5G"
