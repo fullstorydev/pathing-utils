@@ -118,7 +118,7 @@ def preproc_events(events_df: pd.DataFrame) -> pd.DataFrame:
     # it's of length `len(events_df)` not `len(unique_session_ids)`
 
     # sort event times per session
-    events_df = events_df.sort_values(["sid", "EventStart"], ascending=[1, 1])
+    events_df.sort_values(["sid", "EventStart"], ascending=[1, 1], inplace=True)
 
     # create a proper incrementing integer index for each session, move unique
     # `i to a column
