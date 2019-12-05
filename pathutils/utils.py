@@ -103,13 +103,13 @@ def preproc_events(events_df: pd.DataFrame) -> pd.DataFrame:
 
     # Time
     events_df["EventStart"] = pd.to_datetime(events_df["EventStart"])
-    # events_df.sort_values("EventStart", inplace=True)
 
+    # create a parent/child relationship: distinct_session_id (parent) --> index (child)
     events_df.set_index(
         pd.MultiIndex.from_arrays(
-            (pd.Index(events_df["distinct_session_id"]), events_df.index),
+            [ pd.Index(events_df["distinct_session_id"]), events_df.index ],
             names=("sid", "i"),
-        ),
+            ),
         inplace=True,
     )
 
@@ -118,11 +118,8 @@ def preproc_events(events_df: pd.DataFrame) -> pd.DataFrame:
     # it's of length `len(events_df)` not `len(unique_session_ids)`
 
     # sort event times per session
-    events_df = (
-        events_df.reset_index()
-        .sort_values(["sid", "EventStart"], ascending=[1, 1])
-        .set_index(["sid", "i"])
-    )
+    events_df.sort_values(["sid", "EventStart"], ascending=[1, 1], inplace=True)
+
     # create a proper incrementing integer index for each session, move unique
     # `i to a column
     events_df["idx"] = events_df.groupby("sid").cumcount()
