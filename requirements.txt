@@ -2,3 +2,6 @@ pandas
 matplotlib
 numpy
 plotly
+ipywidgets
+jupyterlab==1.2.6
+
